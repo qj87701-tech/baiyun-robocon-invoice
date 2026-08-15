@@ -37,7 +37,19 @@ let browser;
       timeout: 60_000,
     });
     await page.locator('#personal-title').waitFor({ state: 'visible', timeout: 60_000 });
-    await page.waitForTimeout(1_000);
+    await page.waitForFunction(() => {
+      const tab = document.querySelector('[role="tab"]');
+      return tab && Object.keys(tab).some((key) => key.startsWith('__reactProps$'));
+    }, null, { timeout: 20_000 });
+    const tabCount = await page.locator('[role="tab"]').count();
+    if (tabCount < 2) throw new Error(`${profile.name}: work modes failed to hydrate`);
+    await page.locator('[role="tab"]').filter({ hasText: '财务汇总' }).last().click({ force: true });
+    await page.locator('#finance-title').waitFor({ state: 'visible', timeout: 20_000 });
+    await page.waitForFunction(
+      (expectedTitle) => document.title === expectedTitle,
+      expected.title,
+      { timeout: 20_000 },
+    );
 
     const bodyText = await page.locator('body').innerText();
     if ((await page.title()) !== expected.title) throw new Error(`${profile.name}: wrong title`);
@@ -62,10 +74,6 @@ let browser;
     if (!heroStyle.backgroundPosition.includes('52%')) throw new Error(`${profile.name}: wrong crop ${heroStyle.backgroundPosition}`);
     if (!photoResponses.includes(200)) throw new Error(`${profile.name}: hero photo did not return HTTP 200`);
 
-    const tabCount = await page.locator('[role="tab"]').count();
-    if (tabCount < 2) throw new Error(`${profile.name}: work modes failed to hydrate`);
-    await page.locator('[role="tab"]').filter({ hasText: '财务汇总' }).last().click({ force: true });
-    await page.locator('#finance-title').waitFor({ state: 'visible', timeout: 20_000 });
     await page.screenshot({
       path: path.join(screenshotDir, `brand-${profile.name}.png`),
       fullPage: true,
