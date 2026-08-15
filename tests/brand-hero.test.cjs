@@ -10,7 +10,7 @@ const expected = {
   title: '广东白云学院机器人队票据助手',
   brand: '广东白云学院机器人队',
   subbrand: 'ROBOCON票据助手',
-  eyebrow: ['广东白云学院机器人队', 'ROBOCON · 赛季财务工作流'],
+  eyebrow: ['广东白云学院机器人队 ·', 'ROBOCON'],
   slogan: '拒绝平庸，挑战极限',
   footer: '广东白云学院机器人队 / ROBOCON票据助手',
 };
@@ -47,6 +47,7 @@ let browser;
     if ((await page.locator('.crt-logo').count()) !== 0) throw new Error(`${profile.name}: old CRT logo remains`);
     const eyebrow = await page.locator('.hero .eyebrow span').allTextContents();
     if (JSON.stringify(eyebrow) !== JSON.stringify(expected.eyebrow)) throw new Error(`${profile.name}: wrong eyebrow ${JSON.stringify(eyebrow)}`);
+    if (eyebrow.join(' ') !== '广东白云学院机器人队 · ROBOCON') throw new Error(`${profile.name}: wrong combined eyebrow ${eyebrow.join(' ')}`);
     if ((await page.locator('.hero h1').textContent()) !== expected.slogan) throw new Error(`${profile.name}: wrong slogan`);
     if ((await page.locator('footer span').first().textContent()) !== expected.footer) throw new Error(`${profile.name}: wrong footer`);
     for (const forbidden of ['HITCRT', '哈工大竞技机器人队', 'RoboMaster']) {
